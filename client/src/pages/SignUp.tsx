@@ -1,0 +1,159 @@
+import React, { useState } from "react";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
+
+export const SignUp = () => {
+  const regex = new RegExp(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
+  // const signUpMutation = useSignUpMutation();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [formError, setFormError] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const handleSignUp = async () => {
+    let flag = false;
+    if (!regex.test(formData.email)) {
+      flag = true;
+      setFormError((prev) => ({ ...prev, email: "Invalid Email" }));
+    }
+    if (formData.name.length == 0) {
+      flag = true;
+      setFormError((prev) => ({ ...prev, name: "Name cannot be empty" }));
+    }
+    if (formData.password.length < 8) {
+      flag = true;
+      setFormError((prev) => ({ ...prev, password: "Minimum 8 charachers" }));
+    }
+    if (flag) return;
+
+    try {
+      const user = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      console.log("the signed in user is: ", user);
+    } catch (error: any) {
+      // const errorCode = error.code;
+      // const errorMessage = error.message;
+      console.error(error);
+    }
+    // try {
+    //   await signUpMutation.mutateAsync(formData);
+    //   console.log("signed up successfully");
+    //   setFormData({
+    //     name: "",
+    //     email: "",
+    //     password: "",
+    //   });
+    //   navigate("/");
+    // } catch (error) {
+    //   console.error(error);
+    // }
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (formError.email.length != 0 && regex.test(formData.email)) {
+      setFormError((prev) => ({ ...prev, email: "" }));
+    }
+    if (formData.name.length !== 0) {
+      setFormError((prev) => ({ ...prev, name: "" }));
+    }
+    if (formData.password.length >= 8) {
+      setFormError((prev) => ({ ...prev, password: "" }));
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+  return (
+    <>
+      <div className=" flex-1 flex-col flex justify-center items-center">
+        <Card className="sm:w-80 bg-orange-300">
+          <CardHeader>
+            <CardTitle>Login</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form>
+              <div className="grid w-full items-center gap-4">
+                <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    name="name"
+                    placeholder="Enter your name"
+                    type="text"
+                    onChange={handleFormChange}
+                  />
+                  {formError.name.length != 0 ? (
+                    <p className="text-xs text-red-500">{formError.name}</p>
+                  ) : (
+                    ""
+                  )}
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="name">Email</Label>
+                  <Input
+                    name="email"
+                    placeholder="Enter your email"
+                    onChange={handleFormChange}
+                  />
+                  {formError.email.length != 0 ? (
+                    <p className="text-xs text-red-500">{formError.email}</p>
+                  ) : (
+                    ""
+                  )}
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="name">Password</Label>
+                  <Input
+                    name="password"
+                    placeholder="Enter your password"
+                    type="password"
+                    onChange={handleFormChange}
+                  />
+                  {formError.password.length != 0 ? (
+                    <p className="text-xs text-red-500">{formError.password}</p>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-col justify-between ">
+            <Button className="w-full" onClick={handleSignUp}>
+              Login
+            </Button>
+            <span>
+              Already have an account ?{" "}
+              <Link to={"/login"} className="underline">
+                login
+              </Link>
+            </span>
+          </CardFooter>
+        </Card>
+      </div>
+    </>
+  );
+};
