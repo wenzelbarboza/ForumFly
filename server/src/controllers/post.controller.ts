@@ -89,3 +89,30 @@ export const getSiglePosts = asyncHandler(
     }
   }
 );
+
+const createPostSchema = z.object({
+  userId: z.coerce.number(),
+  content: z.string().min(1, "post content should have minimum one character"),
+  title: z.string().min(1, "title should have minimum one chareacter"),
+});
+
+type CreatePost = z.infer<typeof createPostSchema>;
+
+export const createPost = asyncHandler(
+  async (req: Request<{}, {}, CreatePost>, res: Response) => {
+    console.log("inside the signup");
+    try {
+      const postData = createPostSchema.parse(req.body);
+
+      await db.insert(posts).values(postData);
+
+      res.status(200).send({
+        success: true,
+        message: "post created successfully",
+      });
+    } catch (error: any) {
+      console.error("post creation error", error);
+      throw new ApiError(400, error.message || "error in creating post");
+    }
+  }
+);
