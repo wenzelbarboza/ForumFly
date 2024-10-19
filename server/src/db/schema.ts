@@ -13,6 +13,7 @@ import {
 const pgTable = pgTableCreator((name) => `ForumFly_${name}`);
 
 export const typeEnum = pgEnum("type", ["user", "admin"]);
+export const verificationEnum = pgEnum("verification", ["pending", "verified"]);
 
 // Fix updated at
 export const users = pgTable("users", {
@@ -29,6 +30,7 @@ export const posts = pgTable("posts", {
     .references(() => users.id)
     .notNull(),
   title: varchar("title", { length: 255 }).notNull(),
+  verification: verificationEnum("verification").default("pending"),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

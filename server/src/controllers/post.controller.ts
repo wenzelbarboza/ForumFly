@@ -14,14 +14,20 @@ export const getPosts = asyncHandler(async (req: Request, res: Response) => {
     const pageSize = 10;
 
     const offset = (page - 1) * pageSize;
-
     const paginatedPosts = await db
       .select({
         id: posts.id,
         title: posts.title,
         content: posts.content,
         createdAt: posts.createdAt,
-        postVotes: postVotes.value,
+        upvotes:
+          sql<number>`SUM(CASE WHEN ${postVotes.value} = 1 THEN 1 ELSE 0 END)`.as(
+            "upvotes"
+          ),
+        downvotes:
+          sql<number>`SUM(CASE WHEN ${postVotes.value} = -1 THEN 1 ELSE 0 END)`.as(
+            "downvotes"
+          ),
         commentCount: sql<number>`COUNT(${comments.id})`.as("commentCount"),
       })
       .from(posts)
@@ -72,16 +78,30 @@ export const getSiglePosts = asyncHandler(
     try {
       const { postId, userId } = getSinglePostSchema.parse(req.body);
 
-      const singlePost = await db
-        .select()
+      const post = await db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          content: posts.content,
+          createdAt: posts.createdAt,
+          upvotes:
+            sql<number>`SUM(CASE WHEN ${postVotes.value} = 1 THEN 1 ELSE 0 END)`.as(
+              "upvotes"
+            ),
+          downvotes:
+            sql<number>`SUM(CASE WHEN ${postVotes.value} = -1 THEN 1 ELSE 0 END)`.as(
+              "downvotes"
+            ),
+        })
         .from(posts)
         .leftJoin(postVotes, eq(posts.id, postVotes.postId))
-        .where(eq(posts.id, postId));
+        .where(eq(posts.id, postId))
+        .groupBy(posts.id);
 
       res.status(200).send({
         success: true,
         message: "post retrived",
-        data: singlePost[0],
+        data: post[0],
       });
     } catch (error: any) {
       console.error("Error fetching post:", error);
@@ -113,6 +133,39 @@ export const createPost = asyncHandler(
     } catch (error: any) {
       console.error("post creation error", error);
       throw new ApiError(400, error.message || "error in creating post");
+    }
+  }
+);
+
+const votePostSchema = z.object({
+  postId: z.coerce.number(),
+  userId: z.coerce.number(),
+  upVote: z.boolean(),
+});
+
+type VotePost = z.infer<typeof votePostSchema>;
+
+export const votePost = asyncHandler(
+  async (req: Request<{}, {}, VotePost>, res: Response) => {
+    console.log("inside the signup");
+    try {
+      const { upVote, postId, userId } = votePostSchema.parse(req.body);
+
+      const value = upVote ? 1 : -1;
+
+      await db.insert(postVotes).values({
+        postId,
+        userId,
+        value,
+      });
+
+      res.status(200).send({
+        success: true,
+        message: "upvote successfull",
+      });
+    } catch (error: any) {
+      console.error("post upvote error", error);
+      throw new ApiError(400, error.message || "post upvote error");
     }
   }
 );
