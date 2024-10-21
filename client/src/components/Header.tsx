@@ -1,21 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { useState } from "react";
-import { LogIn } from "../pages/LogIn";
 import { useUserStore } from "../zustand/UserStore";
-import { logoutUser } from "../lib/auth";
-import { PenBox } from "lucide-react";
-import { role } from "../types/type";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { FaUser } from "react-icons/fa";
 
 export const Header = () => {
-  const accessToken = useUserStore((state) => state.accessToken);
   const userStore = useUserStore();
   const navigate = useNavigate();
-
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const setAccessToken = useUserStore((state) => state.setAccessToken);
 
   const handleLogout = async () => {
     try {
@@ -32,6 +24,10 @@ export const Header = () => {
     navigate("/login");
   };
 
+  const handleMyPostsNavigation = () => {
+    navigate("/my-posts");
+  };
+
   return (
     <>
       <nav className="w-full py-4 flex items-center justify-between">
@@ -42,20 +38,13 @@ export const Header = () => {
           </Link>
         </div>
         <div className="flex justify-between items-center gap-2  ">
-          {userStore.user?.role == role.recruiter && (
-            <Link to="/post-job">
-              <Button variant="destructive" className="rounded-full">
-                <PenBox size={20} className="mr-2" />
-                Post a Job
-              </Button>
-            </Link>
+          {userStore.user && (
+            <Button onClick={handleMyPostsNavigation} variant={"outline"}>
+              <FaUser className="text-2xl" />
+            </Button>
           )}
-          <Button onClick={handleLogout}>Log out</Button>
-          {accessToken ? (
-            <Button onClick={handleLogout}>logout</Button>
-          ) : (
-            <Button onClick={handleLoginNavigate}>Login</Button>
-          )}
+
+          {userStore.user && <Button onClick={handleLogout}>Log out</Button>}
         </div>
       </nav>
     </>

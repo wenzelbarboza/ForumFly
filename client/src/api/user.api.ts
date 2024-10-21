@@ -1,14 +1,22 @@
 import { useMutation } from "@tanstack/react-query";
-import axiosInstance from "../lib/utils";
-import {
-  apiResponeType,
-  loginType,
-  roleApiType,
-  signUpType,
-} from "../types/api.types";
+import { apiResponeType } from "../types/api.return.types";
 import axios, { AxiosResponse } from "axios";
 
 const userUrl = import.meta.env.VITE_BASE_URL + "/api/v1/user";
+
+export type loginType = {
+  email: string;
+  token: string;
+  name: string;
+};
+
+export type signUpType = {
+  name: string;
+  email: string;
+  type: "user" | "admin" | null;
+  id: number;
+  createdAt: Date | null;
+};
 
 export const useLoginMutation = () => {
   const handelMutation = async ({ email, token, name }: loginType) => {
@@ -49,19 +57,3 @@ export const useLoginMutation = () => {
 //     mutationFn: handelMutation,
 //   });
 // };
-
-export const useRoleMutate = () => {
-  const handelMutation = async (data: roleApiType) => {
-    console.log("data received inside querry mutate: ", data);
-    const res: AxiosResponse<apiResponeType> = await axiosInstance.post(
-      `${userUrl}/role`,
-      data
-    );
-    return res.data;
-  };
-
-  return useMutation({
-    mutationKey: ["update role"],
-    mutationFn: handelMutation,
-  });
-};

@@ -15,7 +15,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export const LogIn = () => {
   const userStore = useUserStore();
@@ -23,13 +23,17 @@ export const LogIn = () => {
   const { mutateAsync: LoginAsync } = useLoginMutation();
   const navigate = useNavigate();
 
+  if (userStore.user) {
+    return <Navigate to={"/feed"} />;
+  }
+
   const handleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const credential = GoogleAuthProvider.credentialFromResult(
         result
       ) as OAuthCredential;
-      const accessToken = credential.accessToken;
+      // const accessToken = credential.accessToken;
       const user = result.user;
 
       const token = credential.idToken || "";
@@ -48,14 +52,14 @@ export const LogIn = () => {
           role: dbUser.data?.type ?? null,
           //id from the server
           id: dbUser.data?.id as number,
-          idToke: token,
+          idToken: token,
         });
 
         // TODO
         // check if aproved if approved then navigate to home
         // else to
         // wait for approval page
-        navigate("/");
+        navigate("/feed");
       } catch (error: any) {
         //signout the user
         await signOut(auth);

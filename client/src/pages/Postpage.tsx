@@ -3,40 +3,95 @@
 import { FC } from "react";
 import { useParams } from "react-router-dom";
 import Comment from "../components/Comment";
+import { useGetSinglePostQuerry, useVotePostMutation } from "../api/post.api";
+import { useUserStore } from "../zustand/UserStore";
+import { useGetCommentsQuerry } from "../api/comments.api";
+import AddCommentDrawer from "../components/AddCommentDrawer";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 const PostPage: FC = () => {
   const { id } = useParams();
+  const postId = Number(id);
+  const userId = useUserStore((state) => state.user?.id) as number;
+  const userName = useUserStore((state) => state.user?.name) as string;
 
-  const post = {
-    id: Number(id),
-    title: `Post ${id} Title`,
-    content: `This is the detailed content of post ${id}.`,
-    comments: [
-      {
-        author: "User1",
-        content: "This is the first comment.",
-        upvotes: 12,
-        replies: [{ author: "User2", content: "This is a reply.", upvotes: 3 }],
-      },
-      {
-        author: "User3",
-        content: "This is the second comment.",
-        upvotes: 8,
-        replies: [],
-      },
-    ],
+  const { mutateAsync } = useVotePostMutation();
+
+  const {
+    data: postDatat,
+    isLoading: isPostLoading,
+    isError: isPostError,
+    refetch: refetchPost,
+  } = useGetSinglePostQuerry({ postId, userId });
+
+  const post = postDatat?.data;
+
+  const {
+    data: commentsData,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+  } = useGetCommentsQuerry({ postId, userId });
+
+  const comments = commentsData?.data;
+
+  const handlePostVote = async (vote: boolean) => {
+    try {
+      await mutateAsync({ upVote: vote, postId, userId });
+      await refetchPost();
+    } catch (error: any) {
+      console.error(error);
+    }
   };
+
+  const postVotes = (post?.upvotes || 0) - (post?.downvotes || 0);
+
+  if (isPostError) {
+    return <h2>Error in loading post.</h2>;
+  }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
-      <p className="mb-8">{post.content}</p>
-
+      <h1 className="text-2xl font-bold mb-4">{post?.title}</h1>
+      {isPostLoading ? (
+        <h2>Loading...</h2>
+      ) : (
+        <>
+          <div className="mb-8">
+            <p className="mb-4">{post?.content}</p>
+            <div className="flex items-center space-x-1">
+              <ArrowUp
+                onClick={() => handlePostVote(true)}
+                className="text-green-600 hover:cursor-pointer"
+              />
+              <span>{postVotes}</span>
+              <ArrowDown
+                onClick={() => handlePostVote(false)}
+                className="text-red-600 hover:cursor-pointer"
+              />
+            </div>
+          </div>
+        </>
+      )}
       <div>
         <h2 className="text-xl font-semibold mb-4">Comments</h2>
-        {post.comments.map((comment, index) => (
-          <Comment key={index} {...comment} />
-        ))}
+        <AddCommentDrawer postId={postId} userId={userId} />
+        {isCommentsLoading ? (
+          <h2>Loading...</h2>
+        ) : isCommentsError ? (
+          <h2>Error in loading comments</h2>
+        ) : comments?.length ? (
+          comments?.map((comment, index) => (
+            <Comment
+              key={index}
+              {...comment}
+              userId={userId}
+              userName={userName}
+              postId={postId}
+            />
+          ))
+        ) : (
+          <h2>No comments Found.</h2>
+        )}
       </div>
     </div>
   );

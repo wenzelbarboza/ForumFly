@@ -1,16 +1,21 @@
-// src/components/PostCard.tsx
-
 import { FC } from "react";
-import { ArrowUp, ArrowDown, MessageSquare } from "lucide-react"; // Shadcn icons
+import { ArrowUp, ArrowDown, MessageSquare } from "lucide-react";
 
 interface PostCardProps {
   id: number;
   title: string;
+  content: string;
   upvotes: number;
   commentsCount: number;
 }
 
-const PostCard: FC<PostCardProps> = ({ id, title, upvotes, commentsCount }) => {
+const PostCard: FC<PostCardProps> = ({
+  id,
+  title,
+  content,
+  upvotes,
+  commentsCount,
+}) => {
   return (
     <div className="p-4 mb-4 border rounded-lg bg-white shadow hover:shadow-lg transition-shadow">
       <div className="flex justify-between items-center">

@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import axiosInstance from "./utils";
-import { apiResponeType } from "../types/api.types";
+import { apiResponeType } from "../types/api.return.types";
 
 export const loginUser = async (email: string, password: string) => {
   const response: AxiosResponse<{ accessToken: string }> =

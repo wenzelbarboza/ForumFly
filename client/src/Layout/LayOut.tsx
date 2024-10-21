@@ -7,65 +7,64 @@ import MoonLoader from "react-spinners/MoonLoader";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
+import { apiResponeType } from "../types/api.return.types";
+
+const userUrl = import.meta.env.VITE_BASE_URL + "/api/v1/user";
+type userResponse = {
+  name: string;
+  email: string;
+  type: "user" | "admin" | null;
+  id: number;
+  createdAt: Date | null;
+};
 //TODO fix grid layout
 export const LayOut = () => {
   const userStore = useUserStore();
+  const querryclient = useQueryClient();
 
-  // useEffect(() => {
-  //   refreshAccessToken()
-  //     .then((data) => {
-  //       userStore.setAccessToken(data.accessToken);
-  //       const decoded = jwtDecode<payloadType>(data.accessToken);
-  //       console.log("the access token fetched just now is: ", decoded);
-  //       userStore.setUser({
-  //         name: decoded.name,
-  //         role: decoded.role ?? null,
-  //         id: decoded.userId,
-  //       });
-  //       console.log("userStore", userStore);
-  //     })
+  const fetchuser = async (email: string) => {
+    const res: AxiosResponse<apiResponeType<userResponse>> = await axios.post(
+      `${userUrl}/get-user`,
+      {
+        email,
+      }
+    );
+    return res.data;
+  };
 
-  //     .catch((error) => {
-  //       console.error(error);
-  //     })
+  useEffect(() => {
+    onAuthStateChanged(auth, async (user) => {
+      try {
+        if (user) {
+          const userdata = await querryclient.fetchQuery({
+            queryKey: ["user", user.uid],
+            queryFn: () => fetchuser(user.email as string),
+          });
+          const idToken = (await user.getIdToken()) as string;
 
-  //     .finally(() => {
-  //       userStore.setLoading(false);
-  //     });
-  // }, []);
+          console.log("user data in layout: ", userdata);
 
-  //-----------new code--------------
+          const data = userdata.data;
 
-  // const querryclient = usequeryclient();
-
-  // const fetchuser = () => {
-  //   const res = await axios.get();
-  //   return;
-  // };
-
-  // useeffect(() => {
-  //   onauthstatechanged(auth, async (user) => {
-  //     try {
-  //       if (user) {
-  //         const userdata = await querryclient.fetchquery({
-  //           querykey: ["user", user.uid],
-  //           queryfn: () => fetchuser(user.uid),
-  //         });
-
-  //         userstore.setuser(userdata);
-  //         userstore.setloading(false);
-  //       } else {
-  //         userstore.setuser(null);
-  //         userstore.setloading(false);
-  //         console.log("this is user store: ", userstore);
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   });
-  //   return () => {};
-  // }, []);
+          userStore.setUser({
+            id: data?.id as number,
+            idToken,
+            name: data?.name as string,
+            role: data?.type as string,
+          });
+          userStore.setLoading(false);
+        } else {
+          userStore.setUser(null);
+          userStore.setLoading(false);
+          console.log("this is user store: ", userStore);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+    return () => {};
+  }, []);
 
   return (
     <>

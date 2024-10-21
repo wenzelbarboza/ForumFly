@@ -8,6 +8,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import FeedPage from "./pages/FeedPage";
 import PostPage from "./pages/Postpage";
 import { LogIn } from "./pages/LogIn";
+import MyPostsPage from "./pages/MyPostsPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -16,31 +18,32 @@ const router = createBrowserRouter([
     element: <LayOut />,
     children: [
       {
+        path: "/feed",
+        element: (
+          <ProtectedRoute>
+            <FeedPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/",
-        element: <FeedPage />,
+        element: <LogIn />,
       },
       {
-        path: "login",
+        path: "my-posts",
         element: (
-          //<protectedRoute>
-          <LogIn />
-          //</ProtectedRoute>
+          <ProtectedRoute>
+            <MyPostsPage />
+          </ProtectedRoute>
         ),
       },
-      {
-        path: "signup",
-        element: (
-          //<protectedRoute>
-          <SignUp />
-          //</ProtectedRoute>
-        ),
-      },
+
       {
         path: "/post/:id",
         element: (
-          //<protectedRoute>
-          <PostPage />
-          //</ProtectedRoute>
+          <ProtectedRoute>
+            <PostPage />
+          </ProtectedRoute>
         ),
       },
     ],

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { user } from "../types/api.types";
+import { user } from "../types/api.return.types";
 
 type userStateType = {
   loading: boolean;
