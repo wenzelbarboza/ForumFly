@@ -7,7 +7,7 @@ import {
 
 const commentsRouter = express.Router();
 
-commentsRouter.get("/comment/get-comments", getComments);
+commentsRouter.post("/comment/get-comments", getComments);
 commentsRouter.post("/comment/post-comment", postComments);
 commentsRouter.post("/comment/vote-comment", voteComment);
 

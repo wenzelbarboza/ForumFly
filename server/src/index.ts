@@ -19,6 +19,7 @@ import { userRouter } from "./routes/user.routes";
 import { globalCatch } from "./utils/globalCatch";
 import { postsRouter } from "./routes/posts.routes";
 import { commentsRouter } from "./routes/comments.routes";
+import { replyRouter } from "./routes/reply.routes";
 
 app.get("/", (req, res) => {
   return res.status(200).json({
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1", userRouter);
 app.use("/api/v1", postsRouter);
 app.use("/api/v1", commentsRouter);
+app.use("/api/v1", replyRouter);
 
 //global catch
 app.use(globalCatch);

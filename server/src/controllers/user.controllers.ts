@@ -5,6 +5,7 @@ import { newUserProps } from "../models/user.models";
 import { db } from "../db/db";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
+import { ApiError } from "../utils/apiError";
 
 type newUserPropsType = z.infer<typeof newUserProps>;
 
@@ -43,6 +44,37 @@ export const signUp = asyncHandler(
         success: true,
         message: "Registration successfull",
         data: newUser[0],
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
+//Todo change from email to userId
+const getUserSchema = z.object({
+  email: z.string(),
+});
+
+type GetUser = z.infer<typeof getUserSchema>;
+
+export const getUser = asyncHandler(
+  async (req: Request<any, any, GetUser>, res: Response) => {
+    console.log("inside the signup");
+
+    try {
+      let { email } = getUserSchema.parse(req.body);
+
+      const user = await db.select().from(users).where(eq(users.email, email));
+
+      if (!user.length) {
+        throw new ApiError(400, "no user found");
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "user retrived successfully",
+        data: user[0],
       });
     } catch (error) {
       throw error;

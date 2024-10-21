@@ -7,63 +7,69 @@ import { comments, posts, users, postVotes } from "../db/schema";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { ApiError } from "../utils/apiError";
 
-export const getPosts = asyncHandler(async (req: Request, res: Response) => {
-  console.log("inside the signup");
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const pageSize = 10;
+type GetPosts = {
+  userId: number;
+};
 
-    const offset = (page - 1) * pageSize;
-    const paginatedPosts = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        upvotes:
-          sql<number>`SUM(CASE WHEN ${postVotes.value} = 1 THEN 1 ELSE 0 END)`.as(
-            "upvotes"
-          ),
-        downvotes:
-          sql<number>`SUM(CASE WHEN ${postVotes.value} = -1 THEN 1 ELSE 0 END)`.as(
-            "downvotes"
-          ),
-        commentCount: sql<number>`COUNT(${comments.id})`.as("commentCount"),
-      })
-      .from(posts)
-      .leftJoin(postVotes, eq(posts.id, postVotes.postId))
-      .leftJoin(comments, eq(posts.id, comments.postId))
-      .groupBy(posts.id)
-      .orderBy(desc(posts.createdAt))
-      .limit(pageSize)
-      .offset(offset);
+export const getPosts = asyncHandler(
+  async (req: Request<{}, {}, GetPosts>, res: Response) => {
+    console.log("inside the signup");
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = 10;
 
-    //     const any = await db
-    //       .select()
-    //       .from(posts)
-    //       .leftJoin(votes, eq(posts.id, votes.postId))
-    // .leftJoin(comments, eq(posts.id, comments.postId))
-    //       .orderBy(desc(posts.createdAt))
-    //       .limit(pageSize)
-    //       .offset(offset);
+      const offset = (page - 1) * pageSize;
+      const paginatedPosts = await db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          content: posts.content,
+          createdAt: posts.createdAt,
+          upvotes:
+            sql<number>`SUM(CASE WHEN ${postVotes.value} = 1 THEN 1 ELSE 0 END)`.as(
+              "upvotes"
+            ),
+          downvotes:
+            sql<number>`SUM(CASE WHEN ${postVotes.value} = -1 THEN 1 ELSE 0 END)`.as(
+              "downvotes"
+            ),
+          commentCount: sql<number>`COUNT(${comments.id})`.as("commentCount"),
+        })
+        .from(posts)
+        .leftJoin(postVotes, eq(posts.id, postVotes.postId))
+        .leftJoin(comments, eq(posts.id, comments.postId))
+        .groupBy(posts.id)
+        .orderBy(desc(posts.createdAt))
+        .limit(pageSize)
+        .offset(offset);
 
-    const totalPosts = await db.select({ count: count() }).from(posts);
-    const totalPages = Math.ceil(totalPosts[0].count / pageSize);
+      //     const any = await db
+      //       .select()
+      //       .from(posts)
+      //       .leftJoin(votes, eq(posts.id, votes.postId))
+      // .leftJoin(comments, eq(posts.id, comments.postId))
+      //       .orderBy(desc(posts.createdAt))
+      //       .limit(pageSize)
+      //       .offset(offset);
 
-    res.status(200).send({
-      success: true,
-      message: "posts retrived",
-      data: {
-        posts: paginatedPosts,
-        currentPage: page,
-        totalPages,
-      },
-    });
-  } catch (error: any) {
-    console.error("Error fetching posts:", error);
-    throw new ApiError(400, error.message || "error in fetching posts");
+      const totalPosts = await db.select({ count: count() }).from(posts);
+      const totalPages = Math.ceil(totalPosts[0].count / pageSize);
+
+      res.status(200).send({
+        success: true,
+        message: "posts retrived",
+        data: {
+          posts: paginatedPosts,
+          currentPage: page,
+          totalPages,
+        },
+      });
+    } catch (error: any) {
+      console.error("Error fetching posts:", error);
+      throw new ApiError(400, error.message || "error in fetching posts");
+    }
   }
-});
+);
 
 const getSinglePostSchema = z.object({
   userId: z.coerce.number(),
@@ -120,8 +126,9 @@ type CreatePost = z.infer<typeof createPostSchema>;
 
 export const createPost = asyncHandler(
   async (req: Request<{}, {}, CreatePost>, res: Response) => {
-    console.log("inside the signup");
+    console.log("inside the create post");
     try {
+      console.log(req.body);
       const postData = createPostSchema.parse(req.body);
 
       await db.insert(posts).values(postData);
@@ -166,6 +173,56 @@ export const votePost = asyncHandler(
     } catch (error: any) {
       console.error("post upvote error", error);
       throw new ApiError(400, error.message || "post upvote error");
+    }
+  }
+);
+const getUserPostSchema = z.object({
+  userId: z.coerce.number(),
+});
+
+type GetUserPosts = z.infer<typeof getUserPostSchema>;
+
+export const getUserPosts = asyncHandler(
+  async (req: Request<{}, {}, GetUserPosts>, res: Response) => {
+    try {
+      const { userId } = getUserPostSchema.parse(req.body);
+      const userPosts = await db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          content: posts.content,
+          createdAt: posts.createdAt,
+        })
+        .from(posts)
+        .where(eq(posts.userId, userId))
+        .orderBy(desc(posts.createdAt));
+
+      res.status(200).json({
+        success: true,
+        message: "upvote successfull",
+        data: userPosts,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error fetching user's posts" });
+    }
+  }
+);
+
+const deleteUserPostSchema = z.object({
+  userId: z.coerce.number(),
+  postId: z.coerce.number(),
+});
+
+type DeleteUserPost = z.infer<typeof deleteUserPostSchema>;
+
+export const deletePost = asyncHandler(
+  async (req: Request<{}, {}, DeleteUserPost>, res: Response) => {
+    try {
+      const { userId, postId } = deleteUserPostSchema.parse(req.body);
+      await db.delete(posts).where(eq(posts.id, postId));
+      res.status(204).json({ message: "Post deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Error deleting post" });
     }
   }
 );

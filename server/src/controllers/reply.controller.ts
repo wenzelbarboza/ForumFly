@@ -15,11 +15,11 @@ type GetReply = z.infer<typeof getReplySchema>;
 
 export const getReplys = asyncHandler(
   async (req: Request<{}, {}, GetReply>, res: Response) => {
-    console.log("inside the signup");
+    console.log("inside the getReply");
     try {
       const { commentId, userId } = getReplySchema.parse(req.body);
 
-      const post = await db
+      const repliesRes = await db
         .select()
         .from(replies)
         .where(eq(replies.commentId, commentId));
@@ -27,7 +27,7 @@ export const getReplys = asyncHandler(
       res.status(200).send({
         success: true,
         message: "reply retrived successfully",
-        data: post[0],
+        data: repliesRes,
       });
     } catch (error: any) {
       console.error("error in fetching replys: ", error);

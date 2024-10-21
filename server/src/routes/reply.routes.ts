@@ -3,7 +3,7 @@ import { getReplys, postReply } from "../controllers/reply.controller";
 
 const replyRouter = express.Router();
 
-replyRouter.get("/reply/get-reply", getReplys);
-replyRouter.get("/reply/post-reply", postReply);
+replyRouter.post("/reply/get-reply", getReplys);
+replyRouter.post("/reply/post-reply", postReply);
 
 export { replyRouter };
