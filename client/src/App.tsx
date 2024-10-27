@@ -2,7 +2,6 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 import { LayOut } from "./Layout/LayOut";
 import { ThemeProvider } from "./components/theme-provider";
-import { SignUp } from "./pages/SignUp";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import FeedPage from "./pages/FeedPage";
@@ -10,6 +9,7 @@ import PostPage from "./pages/Postpage";
 import { LogIn } from "./pages/LogIn";
 import MyPostsPage from "./pages/MyPostsPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import AdminPage from "./pages/AdminPage";
 
 const queryClient = new QueryClient();
 
@@ -30,11 +30,19 @@ const router = createBrowserRouter([
         element: <LogIn />,
       },
       {
-        path: "my-posts",
+        path: "/my-posts",
         element: (
           <ProtectedRoute>
             <MyPostsPage />
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/admin",
+        element: (
+          // <ProtectedRoute>
+          <AdminPage />
+          // </ProtectedRoute>
         ),
       },
 

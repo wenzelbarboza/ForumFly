@@ -76,7 +76,6 @@ export const useVotePostMutation = () => {
   };
 
   return useMutation({
-    mutationKey: ["vote-post"],
     mutationFn: handelMutation,
   });
 };

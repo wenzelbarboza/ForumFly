@@ -18,7 +18,7 @@ export const useGetCommentsQuerry = (data: GetComments) => {
   };
 
   return useQuery({
-    queryKey: ["get-comments"],
+    queryKey: ["get-comments", data],
     queryFn: () => handleQuerry(),
   });
 };

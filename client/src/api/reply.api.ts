@@ -8,6 +8,7 @@ const userUrl = import.meta.env.VITE_BASE_URL + "/api/v1/reply";
 type GetReply = {
   userId: number;
   commentId: number;
+  postId: number;
 };
 export const useGetReplyQuerry = (data: GetReply) => {
   const handleQuerry = async () => {
@@ -17,7 +18,7 @@ export const useGetReplyQuerry = (data: GetReply) => {
   };
 
   return useQuery({
-    queryKey: ["get-reply"],
+    queryKey: ["get-reply", data],
     queryFn: () => handleQuerry(),
   });
 };

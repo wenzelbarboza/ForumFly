@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useGetReplies, useGetReplyQuerry } from "../api/reply.api"; // Assuming this is the correct query hook to fetch replies
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetReplyQuerry } from "../api/reply.api"; // Assuming this is the correct query hook to fetch replies
 import Reply from "./Reply";
 import AddReplyDrawer from "./AddReplyDrawer";
 import { useVoteCommentMutation } from "../api/comments.api";
@@ -23,9 +23,8 @@ const Comment: FC<CommentProps> = ({
   content,
   userId,
   upvotes,
-  createdAt,
   downvotes,
-  replyCount,
+  replyCount = 0,
   postId,
   userName,
 }) => {
@@ -40,7 +39,7 @@ const Comment: FC<CommentProps> = ({
     data: repliesData,
     isLoading,
     isError,
-  } = useGetReplyQuerry({ commentId: id, userId });
+  } = useGetReplyQuerry({ commentId: id, userId, postId });
 
   const replies = repliesData?.data;
 
@@ -97,16 +96,18 @@ const Comment: FC<CommentProps> = ({
           ) : isError ? (
             <p>Error loading replies</p>
           ) : replies && replies.length > 0 ? (
-            replies.map((reply, index) => (
-              <Reply
-                key={index}
-                content={reply.content}
-                createdAt={reply.createdAt}
-                id={reply.id}
-                userId={userId}
-                userName={userName}
-              />
-            ))
+            replies.map((reply, index) => {
+              return (
+                <Reply
+                  key={index}
+                  content={reply.content}
+                  createdAt={reply.createdAt}
+                  id={reply.id}
+                  userId={userId}
+                  userName={userName}
+                />
+              );
+            })
           ) : (
             <p>No replies found</p>
           )}

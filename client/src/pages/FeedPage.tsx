@@ -47,17 +47,23 @@ const FeedPage: FC = () => {
     <div className="container mx-auto p-4 flex-1 flex flex-col">
       <h1 className="text-2xl font-bold mb-4">Posts</h1>
       <AddPostDrawer userId={userStore.user?.id as number} />
-      {postsData?.data?.posts.map((post) => (
-        <div onClick={() => handleNavigate(post.id)} key={post.id}>
-          <PostCard
-            content={post.content}
-            id={post.id}
-            title={post.title}
-            upvotes={post.upvotes}
-            commentsCount={post.commentCount}
-          />
-        </div>
-      ))}
+      {postsData?.data?.posts.map((post) => {
+        const votes = postsData.data?.votes.find(
+          (vote) => vote.postId == post.id
+        );
+        return (
+          <div onClick={() => handleNavigate(post.id)} key={post.id}>
+            <PostCard
+              content={post.content}
+              id={post.id}
+              title={post.title}
+              // upvotes={post.upvotes}
+              upvotes={votes?.upvotes || 0}
+              commentsCount={post.commentCount}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

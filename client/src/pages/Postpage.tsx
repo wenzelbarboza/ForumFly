@@ -24,7 +24,8 @@ const PostPage: FC = () => {
     refetch: refetchPost,
   } = useGetSinglePostQuerry({ postId, userId });
 
-  const post = postDatat?.data;
+  const post = postDatat?.data?.post;
+  const postVote = postDatat?.data?.votes;
 
   const {
     data: commentsData,
@@ -32,7 +33,10 @@ const PostPage: FC = () => {
     isError: isCommentsError,
   } = useGetCommentsQuerry({ postId, userId });
 
-  const comments = commentsData?.data;
+  const comments = commentsData?.data?.postComments;
+  const replyCount = commentsData?.data?.replyCount;
+
+  console.log("reply count ", replyCount);
 
   const handlePostVote = async (vote: boolean) => {
     try {
@@ -43,7 +47,7 @@ const PostPage: FC = () => {
     }
   };
 
-  const postVotes = (post?.upvotes || 0) - (post?.downvotes || 0);
+  const postVotes = (postVote?.upvotes || 0) - (postVote?.downvotes || 0);
 
   if (isPostError) {
     return <h2>Error in loading post.</h2>;
@@ -80,15 +84,21 @@ const PostPage: FC = () => {
         ) : isCommentsError ? (
           <h2>Error in loading comments</h2>
         ) : comments?.length ? (
-          comments?.map((comment, index) => (
-            <Comment
-              key={index}
-              {...comment}
-              userId={userId}
-              userName={userName}
-              postId={postId}
-            />
-          ))
+          comments?.map((comment, index) => {
+            const reply = replyCount?.find(
+              (item) => item.commentsId == comment.id
+            );
+            return (
+              <Comment
+                key={index}
+                {...comment}
+                replyCount={reply?.replyCount as number}
+                userId={userId}
+                userName={userName}
+                postId={postId}
+              />
+            );
+          })
         ) : (
           <h2>No comments Found.</h2>
         )}

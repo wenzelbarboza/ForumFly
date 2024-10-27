@@ -13,27 +13,57 @@ export type apiResponeType<T = unknown> = {
 
 //post
 
+// export type postType = {
+//   posts: {
+//     id: number;
+//     title: string;
+//     content: string;
+//     createdAt: Date | null;
+//     upvotes: number;
+//     downvotes: number;
+//     commentCount: number;
+//   }[];
+//   currentPage: number;
+//   totalPages: number;
+// };
+
 export type postType = {
   posts: {
     id: number;
     title: string;
     content: string;
     createdAt: Date | null;
+    commentCount: number;
+  }[];
+  votes: {
+    postId: number;
     upvotes: number;
     downvotes: number;
-    commentCount: number;
   }[];
   currentPage: number;
   totalPages: number;
 };
 
+// export type singlePostType = {
+//   id: number;
+//   title: string;
+//   content: string;
+//   createdAt: Date | null;
+//   upvotes: number;
+//   downvotes: number;
+// };
+
 export type singlePostType = {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: Date | null;
-  upvotes: number;
-  downvotes: number;
+  post: {
+    id: number;
+    title: string;
+    content: string;
+    createdAt: Date | null;
+  };
+  votes: {
+    upvotes: number;
+    downvotes: number;
+  };
 };
 
 export type UserPostType = {
@@ -44,20 +74,61 @@ export type UserPostType = {
 }[];
 
 //comment
+// export type CommentsType = {
+//   id: number;
+//   content: string;
+//   createdAt: Date | null;
+//   upvotes: number;
+//   downvotes: number;
+//   replyCount: number;
+// }[];
 export type CommentsType = {
-  id: number;
-  content: string;
-  createdAt: Date | null;
-  upvotes: number;
-  downvotes: number;
-  replyCount: number;
-}[];
+  postComments: {
+    id: number;
+    content: string;
+    createdAt: Date | null;
+    upvotes: number;
+    downvotes: number;
+  }[];
+  replyCount: {
+    replyCount: number;
+    commentsId: never;
+  }[];
+};
 
 //reply
 export type replyType = {
+  userId: number;
+  commentId: number;
+  postId: number | null;
   id: number;
   createdAt: Date | null;
+  content: string;
+}[];
+
+// admin
+export type allAdiminPosts = {
   userId: number;
   content: string;
+  title: string;
+  id: number;
+  createdAt: Date | null;
+  verification: "pending" | "verified" | null;
+}[];
+
+export type allAdmineComments = {
+  userId: number;
+  postId: number;
+  content: string;
+  id: number;
+  createdAt: Date | null;
+}[];
+
+export type allAdminReplies = {
+  userId: number;
+  postId: number | null;
+  content: string;
+  id: number;
+  createdAt: Date | null;
   commentId: number;
 }[];
