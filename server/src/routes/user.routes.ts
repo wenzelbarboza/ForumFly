@@ -7,7 +7,5 @@ const userRouter = express.Router();
 //api/v1/user/new
 userRouter.post("/user/signup", signUp);
 userRouter.post("/user/get-user", getUser);
-userRouter.post("/user/get-user-post", getUserPosts);
-userRouter.delete("/user/delete-post", deletePost);
 
 export { userRouter };

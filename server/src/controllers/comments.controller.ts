@@ -33,19 +33,30 @@ export const getComments = asyncHandler(
             sql<number>`SUM(CASE WHEN ${commentVotes.value} = -1 THEN 1 ELSE 0 END)`.as(
               "downvotes"
             ),
-          replyCount: sql<number>`COUNT(${replies.id})`.as("replyCount"),
         })
         .from(comments)
         .leftJoin(commentVotes, eq(comments.id, commentVotes.commentId))
-        .leftJoin(replies, eq(comments.id, replies.commentId))
         .where(eq(comments.postId, postId))
         .groupBy(comments.id)
         .orderBy(desc(comments.createdAt));
 
+      const replyCountRes = await db
+        .select({
+          replyCount: sql<number>`COUNT(${replies.id})`.as("replyCount"),
+          commentsId: comments.id,
+        })
+        .from(comments)
+        .leftJoin(replies, eq(replies.commentId, comments.id))
+        .where(eq(comments.postId, postId))
+        .groupBy(comments.id);
+
       res.status(200).send({
         success: true,
         message: "comments retrived",
-        data: postComments,
+        data: {
+          postComments,
+          replyCount: replyCountRes,
+        },
       });
     } catch (error: any) {
       console.error("coments retrival error", error);

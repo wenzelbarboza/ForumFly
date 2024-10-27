@@ -9,6 +9,7 @@ import { ApiError } from "../utils/apiError";
 const getReplySchema = z.object({
   userId: z.coerce.number(),
   commentId: z.coerce.number(),
+  postId: z.coerce.number(),
 });
 
 type GetReply = z.infer<typeof getReplySchema>;
@@ -17,7 +18,7 @@ export const getReplys = asyncHandler(
   async (req: Request<{}, {}, GetReply>, res: Response) => {
     console.log("inside the getReply");
     try {
-      const { commentId, userId } = getReplySchema.parse(req.body);
+      const { commentId, userId, postId } = getReplySchema.parse(req.body);
 
       const repliesRes = await db
         .select()

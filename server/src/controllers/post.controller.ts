@@ -4,8 +4,9 @@ import z from "zod";
 import { newUserProps } from "../models/user.models";
 import { db } from "../db/db";
 import { comments, posts, users, postVotes } from "../db/schema";
-import { count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { ApiError } from "../utils/apiError";
+import { PostgresError } from "postgres";
 
 type GetPosts = {
   userId: number;
@@ -25,6 +26,18 @@ export const getPosts = asyncHandler(
           title: posts.title,
           content: posts.content,
           createdAt: posts.createdAt,
+          commentCount: sql<number>`COUNT(${comments.id})`.as("commentCount"),
+        })
+        .from(posts)
+        .leftJoin(comments, eq(posts.id, comments.postId))
+        .groupBy(posts.id)
+        .orderBy(desc(posts.createdAt))
+        .limit(pageSize)
+        .offset(offset);
+
+      const votesRes = await db
+        .select({
+          postId: postVotes.postId,
           upvotes:
             sql<number>`SUM(CASE WHEN ${postVotes.value} = 1 THEN 1 ELSE 0 END)`.as(
               "upvotes"
@@ -33,18 +46,11 @@ export const getPosts = asyncHandler(
             sql<number>`SUM(CASE WHEN ${postVotes.value} = -1 THEN 1 ELSE 0 END)`.as(
               "downvotes"
             ),
-          commentCount: sql<number>`COUNT(${comments.id})`.as("commentCount"),
         })
-        .from(posts)
-        .leftJoin(postVotes, eq(posts.id, postVotes.postId))
-        .leftJoin(comments, eq(posts.id, comments.postId))
-        .groupBy(posts.id)
-        .orderBy(desc(posts.createdAt))
-        .limit(pageSize)
-        .offset(offset);
+        .from(postVotes)
+        .groupBy(postVotes.postId);
 
-      //     const any = await db
-      //       .select()
+      //  .select()
       //       .from(posts)
       //       .leftJoin(votes, eq(posts.id, votes.postId))
       // .leftJoin(comments, eq(posts.id, comments.postId))
@@ -60,6 +66,7 @@ export const getPosts = asyncHandler(
         message: "posts retrived",
         data: {
           posts: paginatedPosts,
+          votes: votesRes,
           currentPage: page,
           totalPages,
         },
@@ -90,6 +97,12 @@ export const getSiglePosts = asyncHandler(
           title: posts.title,
           content: posts.content,
           createdAt: posts.createdAt,
+        })
+        .from(posts)
+        .where(eq(posts.id, postId));
+
+      const votesRes = await db
+        .select({
           upvotes:
             sql<number>`SUM(CASE WHEN ${postVotes.value} = 1 THEN 1 ELSE 0 END)`.as(
               "upvotes"
@@ -99,15 +112,16 @@ export const getSiglePosts = asyncHandler(
               "downvotes"
             ),
         })
-        .from(posts)
-        .leftJoin(postVotes, eq(posts.id, postVotes.postId))
-        .where(eq(posts.id, postId))
-        .groupBy(posts.id);
+        .from(postVotes)
+        .where(eq(postVotes.postId, postId));
 
       res.status(200).send({
         success: true,
         message: "post retrived",
-        data: post[0],
+        data: {
+          post: post[0],
+          votes: votesRes[0],
+        },
       });
     } catch (error: any) {
       console.error("Error fetching post:", error);
@@ -154,11 +168,22 @@ type VotePost = z.infer<typeof votePostSchema>;
 
 export const votePost = asyncHandler(
   async (req: Request<{}, {}, VotePost>, res: Response) => {
-    console.log("inside the signup");
     try {
       const { upVote, postId, userId } = votePostSchema.parse(req.body);
 
       const value = upVote ? 1 : -1;
+      const ifvoted = await db
+        .select()
+        .from(postVotes)
+        .where(and(eq(postVotes.userId, userId), eq(postVotes.value, value)))
+        .limit(1);
+
+      if (ifvoted.length) {
+        return res.status(200).send({
+          success: true,
+          message: "already voted",
+        });
+      }
 
       await db.insert(postVotes).values({
         postId,

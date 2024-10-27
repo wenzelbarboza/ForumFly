@@ -56,6 +56,9 @@ export const replies = pgTable("replies", {
       onDelete: "cascade",
     })
     .notNull(),
+  postId: integer("post_id").references(() => posts.id, {
+    onDelete: "cascade",
+  }),
   userId: integer("user_id")
     .references(() => users.id)
     .notNull(),
