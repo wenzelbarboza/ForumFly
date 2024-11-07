@@ -26,6 +26,7 @@ export const getPosts = asyncHandler(
           title: posts.title,
           content: posts.content,
           createdAt: posts.createdAt,
+          photoUrl: posts.photoUrl,
           commentCount: sql<number>`COUNT(${comments.id})`.as("commentCount"),
         })
         .from(posts)
@@ -134,6 +135,7 @@ const createPostSchema = z.object({
   userId: z.coerce.number(),
   content: z.string().min(1, "post content should have minimum one character"),
   title: z.string().min(1, "title should have minimum one chareacter"),
+  photoUrl: z.string(),
 });
 
 type CreatePost = z.infer<typeof createPostSchema>;
@@ -175,13 +177,32 @@ export const votePost = asyncHandler(
       const ifvoted = await db
         .select()
         .from(postVotes)
-        .where(and(eq(postVotes.userId, userId), eq(postVotes.value, value)))
+        .where(and(eq(postVotes.userId, userId), eq(postVotes.postId, postId)))
         .limit(1);
 
-      if (ifvoted.length) {
+      if (ifvoted.length && value == 1 && ifvoted[0].value == 1) {
         return res.status(200).send({
           success: true,
-          message: "already voted",
+          message: "already voted 11",
+        });
+      } else if (ifvoted.length && value == -1 && ifvoted[0].value == -1) {
+        return res.status(200).send({
+          success: true,
+          message: "already voted 12",
+        });
+      } else if (ifvoted.length) {
+        await db
+          .delete(postVotes)
+          .where(
+            and(
+              eq(postVotes.userId, postVotes.userId),
+              eq(postVotes.postId, postId)
+            )
+          );
+
+        return res.status(200).send({
+          success: true,
+          message: "voted successfully",
         });
       }
 

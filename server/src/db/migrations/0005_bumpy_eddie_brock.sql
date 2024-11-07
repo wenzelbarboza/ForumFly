@@ -1,0 +1,1 @@
+ALTER TABLE "ForumFly_posts" ADD COLUMN "photo_url" varchar DEFAULT '' NOT NULL;
