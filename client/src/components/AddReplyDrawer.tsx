@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldValues, useForm } from "react-hook-form";
 import { Textarea } from "./ui/textarea";
 import { useQueryClient } from "@tanstack/react-query";
-import { FaPlus, FaReply } from "react-icons/fa";
+import { FaReply } from "react-icons/fa";
 import { useRef } from "react";
 import { usePostReplyMutation } from "../api/reply.api";
 
