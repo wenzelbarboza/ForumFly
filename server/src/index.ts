@@ -6,15 +6,17 @@ import morgan from "morgan";
 import "dotenv/config";
 const app = express();
 
+const allowedOrigin = process.env.ALLOWED_ORIGIN || "";
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "*",
+    origin: allowedOrigin, // Specify your client origin
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    credentials: true, // Allow cookies and credentials
   })
 );
 app.use(helmet());
