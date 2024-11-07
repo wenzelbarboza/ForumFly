@@ -19,8 +19,8 @@ export type signUpType = {
 };
 
 export const useLoginMutation = () => {
-  const handelMutation = async ({ email, token, name }: loginType) => {\
-    console.log("url in signup is: ",userUrl)
+  const handelMutation = async ({ email, token, name }: loginType) => {
+    console.log("url in signup is: ", userUrl);
     const res: AxiosResponse<apiResponeType<signUpType>> = await axios.post(
       `${userUrl}/signup`,
       {
