@@ -60,6 +60,7 @@ const FeedPage: FC = () => {
               // upvotes={post.upvotes}
               upvotes={votes?.upvotes || 0}
               commentsCount={post.commentCount}
+              photoUrl={post.photoUrl}
             />
           </div>
         );

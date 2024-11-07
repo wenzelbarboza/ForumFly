@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { useUserStore } from "../zustand/UserStore";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
-import { FaUser } from "react-icons/fa";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export const Header = () => {
   const userStore = useUserStore();
@@ -20,9 +20,9 @@ export const Header = () => {
     }
   };
 
-  const handleLoginNavigate = () => {
-    navigate("/login");
-  };
+  // const handleLoginNavigate = () => {
+  //   navigate("/login");
+  // };
 
   const handleMyPostsNavigation = () => {
     navigate("/my-posts");
@@ -39,9 +39,13 @@ export const Header = () => {
         </div>
         <div className="flex justify-between items-center gap-2  ">
           {userStore.user && (
-            <Button onClick={handleMyPostsNavigation} variant={"outline"}>
-              <FaUser className="text-2xl" />
-            </Button>
+            <button onClick={handleMyPostsNavigation}>
+              {/* <FaUser className="text-2xl" /> */}
+              <Avatar>
+                <AvatarImage src={userStore.user.photoUrl} />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+            </button>
           )}
 
           {userStore.user && <Button onClick={handleLogout}>Log out</Button>}

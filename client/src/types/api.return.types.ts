@@ -1,6 +1,7 @@
 export type user = {
   id: number;
   idToken: string;
+  photoUrl: string;
   name: string;
   role: string | null;
 };
@@ -33,6 +34,7 @@ export type postType = {
     title: string;
     content: string;
     createdAt: Date | null;
+    photoUrl: string;
     commentCount: number;
   }[];
   votes: {

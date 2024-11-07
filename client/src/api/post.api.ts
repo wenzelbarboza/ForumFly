@@ -49,6 +49,7 @@ type CreatePost = {
   userId: number;
   title: string;
   content: string;
+  photoUrl: string;
 };
 
 export const useCreatePostMutation = () => {

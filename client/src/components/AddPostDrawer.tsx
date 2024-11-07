@@ -18,6 +18,7 @@ import { useCreatePostMutation } from "../api/post.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { FaPlus } from "react-icons/fa";
 import { useRef } from "react";
+import { useUserStore } from "../zustand/UserStore";
 
 const schema = z.object({
   title: z.string().min(1, { message: "title is required" }),
@@ -32,6 +33,7 @@ const AddPostDrawer = ({ userId }: props) => {
   const { mutateAsync } = useCreatePostMutation();
   const querryclient = useQueryClient();
   const ref = useRef<HTMLButtonElement | null>(null);
+  const userStore = useUserStore();
 
   const {
     handleSubmit,
@@ -49,6 +51,7 @@ const AddPostDrawer = ({ userId }: props) => {
         content: data.content,
         title: data.title,
         userId,
+        photoUrl: userStore.user?.photoUrl as string,
       });
       await querryclient.refetchQueries({ queryKey: ["get-post"] });
       reset();

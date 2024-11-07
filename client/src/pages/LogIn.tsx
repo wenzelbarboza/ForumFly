@@ -53,6 +53,7 @@ export const LogIn = () => {
           //id from the server
           id: dbUser.data?.id as number,
           idToken: token,
+          photoUrl: user.photoURL || "",
         });
 
         // TODO

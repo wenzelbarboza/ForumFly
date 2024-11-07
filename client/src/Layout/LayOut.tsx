@@ -3,7 +3,6 @@ import { Header } from "../components/Header";
 import { useEffect } from "react";
 import { useUserStore } from "../zustand/UserStore";
 import { Toaster } from "../components/ui/toaster";
-import MoonLoader from "react-spinners/MoonLoader";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,6 +36,7 @@ export const LayOut = () => {
     onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
+          console.log("firebase user is: ", user.photoURL);
           const userdata = await querryclient.fetchQuery({
             queryKey: ["user", user.uid],
             queryFn: () => fetchuser(user.email as string),
@@ -52,6 +52,7 @@ export const LayOut = () => {
             idToken,
             name: data?.name as string,
             role: data?.type as string,
+            photoUrl: user.photoURL || "",
           });
           userStore.setLoading(false);
         } else {
