@@ -9,7 +9,6 @@ import PostPage from "./pages/Postpage";
 import { LogIn } from "./pages/LogIn";
 import MyPostsPage from "./pages/MyPostsPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import AdminPage from "./pages/AdminPage";
 import { TabAdminPage } from "./pages/TabAdminPage";
 
 const queryClient = new QueryClient();
@@ -36,14 +35,6 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <MyPostsPage />
           </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/admin",
-        element: (
-          // <ProtectedRoute>
-          <AdminPage />
-          // </ProtectedRoute>
         ),
       },
       {
